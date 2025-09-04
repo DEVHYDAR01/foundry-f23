@@ -42,7 +42,7 @@ contract HelperConfig is Script{
 
     function getAnvilConfig() public returns(NetworkConfig memory) {
         vm.startBroadcast();
-        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(8, 2000e8);
+        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(DECIMALS, INITIAL_PRICE);
         vm.stopBroadcast();
         NetworkConfig memory AnvilChainConfig = NetworkConfig({
             priceFeed: address(mockPriceFeed)
