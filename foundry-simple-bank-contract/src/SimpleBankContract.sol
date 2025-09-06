@@ -14,19 +14,18 @@ pragma solidity ^0.8.19;
 
 contract SimpleBankContract {
     mapping (address => uint) public userToBalance;
-    address[] funders;
     address public immutable owner;
+    event Log(address indexed sender, string message);
     
     constructor () {
         owner = msg.sender;
     }
 
-    function deposit() public payable {
+    function deposit() public payable depoOrwithEvent {
         userToBalance[msg.sender] += msg.value;
-        funders.push(msg.sender);
     }
 
-    function withdraw(address _useraddr, uint256 _amount) public {
+    function withdraw(address _useraddr, uint256 _amount) public depoOrwithEvent {
         uint256 amountDeposited = userToBalance[_useraddr];
         require(_amount <= amountDeposited, "You can't withdraw more than you deposited");
 
@@ -45,5 +44,10 @@ contract SimpleBankContract {
 
     function totalBankEth() public view returns (uint256) {
         return address(this).balance;
+    }
+
+    modifier depoOrwithEvent () {
+        emit Log(msg.sender, "Ether has been deposited or withdrawed");
+        _; 
     }
 }
