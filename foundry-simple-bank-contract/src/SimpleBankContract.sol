@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 // Deposit Ether
 // Users should be able to send Ether to the contract.
 // Store each user’s balance.
@@ -13,16 +15,25 @@ pragma solidity ^0.8.19;
 // Emit an event whenever a deposit or withdrawal happens.
 
 contract SimpleBankContract {
-    mapping (address => uint) public userToBalance;
+    mapping(address => uint256) public userToBalance;
     address public immutable owner;
+
     event Log(address indexed sender, string message);
-    
-    constructor () {
+
+    uint256 public constant MINIMUM_USD = 5e18;
+
+    constructor() {
         owner = msg.sender;
     }
 
     function deposit() public payable depoOrwithEvent {
         userToBalance[msg.sender] += msg.value;
+    }
+
+    function getPriceFeed() public view returns (uint256) {
+        AggregatorV3Interface priceFeed;
+        (,int256 answer,,,)= priceFeed.latestRoundData();
+        return uint(answer * 10000000000);
     }
 
     function withdraw(address _useraddr, uint256 _amount) public depoOrwithEvent {
@@ -34,20 +45,20 @@ contract SimpleBankContract {
         require(address(this).balance >= _amount, "Not enough balance in contract");
 
         // Transfer funds after updating the state
-        (bool Success, ) = payable(_useraddr).call{value: _amount}("");
+        (bool Success,) = payable(_useraddr).call{value: _amount}("");
         require(Success, "Call failed");
     }
 
     function checkBalance() public view returns (uint256) {
-        return userToBalance[msg.sender];  // Returns the balance of the caller
+        return userToBalance[msg.sender]; // Returns the balance of the caller
     }
 
     function totalBankEth() public view returns (uint256) {
         return address(this).balance;
     }
 
-    modifier depoOrwithEvent () {
+    modifier depoOrwithEvent() {
         emit Log(msg.sender, "Ether has been deposited or withdrawed");
-        _; 
+        _;
     }
 }
