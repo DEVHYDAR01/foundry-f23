@@ -1,39 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-
-// Deposit Ether
-// Users should be able to send Ether to the contract.
-// Store each user’s balance.
-// Withdraw Ether
-// Users should be able to withdraw only up to the amount they deposited.
-// Prevent users from withdrawing more than their balance.
-// Check Balance
-// Add a function so any user can check their own balance.
-// Events
-// Emit an event whenever a deposit or withdrawal happens.
+import {AggregatorV3Interface} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {PriceConverter} from "./PriceConverter.sol";
 
 contract SimpleBankContract {
     mapping(address => uint256) public userToBalance;
-    address public immutable owner;
-
+    address public immutable I_OWNER;
+    uint256 ethAmount;
     event Log(address indexed sender, string message);
-
     uint256 public constant MINIMUM_USD = 5e18;
+    using PriceConverter for uint256;
+    AggregatorV3Interface private s_priceFeed;
 
-    constructor() {
-        owner = msg.sender;
+    constructor(address priceFeed) {
+        I_OWNER = msg.sender;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
     }
 
     function deposit() public payable depoOrwithEvent {
+        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!");
         userToBalance[msg.sender] += msg.value;
-    }
-
-    function getPriceFeed() public view returns (uint256) {
-        AggregatorV3Interface priceFeed;
-        (,int256 answer,,,)= priceFeed.latestRoundData();
-        return uint(answer * 10000000000);
     }
 
     function withdraw(address _useraddr, uint256 _amount) public depoOrwithEvent {
