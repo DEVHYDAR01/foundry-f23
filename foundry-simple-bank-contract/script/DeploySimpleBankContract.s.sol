@@ -9,7 +9,7 @@ contract DeploySimpleBankContract is Script {
     function run() external {
         AggregatorV3Interface priceFeed;
         vm.startBroadcast();
-        SimpleBankContract simplebankcontract = new SimpleBankContract();
+        SimpleBankContract simplebankcontract = new SimpleBankContract(0x694AA1769357215DE4FAC081bf1f309aDC325306);
         vm.stopBroadcast();
     }
 }
