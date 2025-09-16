@@ -49,3 +49,10 @@ contract SimpleBankContract {
         _;
     }
 }
+
+fallback() {
+    deposit();
+}
+receive() {
+    deposit();
+}
